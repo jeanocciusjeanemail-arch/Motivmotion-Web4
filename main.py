@@ -41,8 +41,8 @@ def main(page: ft.Page):
         ],
         value="720p"
     )
-    btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", icon=ft.icons.MOVIE_CREATION, disabled=True)
-    video_output = ft.Text("Videyo a ap parèt la a...", italic=True)
+   btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", icon="movie", disabled=True)
+     video_output = ft.Text("Videyo a ap parèt la a...", italic=True)
 
     def verifye_kle(e):
         if input_key.value == KLE_SEKRÈ:
