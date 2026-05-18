@@ -1,4 +1,4 @@
-import flet as ft
+ import flet as ft
 import os
 import json
 import requests
@@ -41,9 +41,6 @@ def main(page: ft.Page):
         ],
         value="720p"
     )
-     # Liy sa yo dwe parfe aliye sou bò gòch la:
-    prompt_input = ft.TextField(label="Ki videyo ou vle kreye?...", ...)
-    resolution_dropdown = ft.Dropdown(...)
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", icon="movie", disabled=True)
     video_output = ft.Text("Videyo a ap parèt la a...", italic=True)
 
