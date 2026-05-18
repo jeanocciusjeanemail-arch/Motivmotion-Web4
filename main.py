@@ -57,11 +57,12 @@ def main(page: ft.Page):
             msg_status.color = ft.colors.RED_400
             page.update()
 
-     btn_verify = ft.ElevatedButton("VÈRIFYE KLE A", on_click=verifye_kle, bgcolor="blue", color="white")
+     # Blòk sa a dwe aliye byen pwòp sou bò gòch la ak 4 espas devan chak liy:
+    btn_verify = ft.ElevatedButton("VÈRIFYE KLE A", on_click=verifye_kle, bgcolor="blue", color="white")
+
     # Paj la ap kòmanse ak bwat kle a sèlman ki aktif
     prompt_input.disabled = True
     resolution_dropdown.disabled = True
-
     page.add(
         ft.Text("🌟 MOTIVMOTION ULTIMATE 🌟", size=28, weight=ft.FontWeight.BOLD, color=ft.colors.bue_400),
         ft.Text("Sistèm Jenerasyon Videyo Sinematik ak AI (Google Veo)", size=16, color=ft.colors.grey_400),
