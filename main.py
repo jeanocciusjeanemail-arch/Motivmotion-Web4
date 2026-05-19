@@ -26,15 +26,29 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.padding = 30
 
-    # Lyen videyo ki kreye a (n ap sove l la a pou bouton telechajman an ka jwenn li)
+    # Lyen videyo ki kreye a
     lyen_videyo_aktyèl = ft.Ref[str]()
 
     # Kontwòl pou kle aktivasyon an
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
+    btn_verify = ft.Ref[ft.ElevatedButton]()
+    
+    # Gwo veso ki kenbe pati kle a pou n ka kache l lendi a fin bon
+    bwat_kle_sekirite = ft.Container(
+        content=ft.Column([
+            input_key,
+            ft.ElevatedButton("VÈRIFYE KLE A", on_click=lambda e: verifye_kle(e), bgcolor="blue", color="white"),
+            msg_status
+        ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+        padding=20,
+        border_radius=10,
+        bgcolor="grey",
+        width=450
+    )
     
     # Kontwòl pou kreyasyon videyo a (ki kache okòmansman)
-    prompt_input = ft.TextField(label="Ki videyo ou vle kreye? (Prompt nan lang Anglè)", multiline=True, min_lines=3, width=500)
+    prompt_input = ft.TextField(label="Ki videyo ou vle kreye? (Prompt nan lang Anglè)", multiline=True, min_lines=3, width=500, disabled=True)
     resolution_dropdown = ft.Dropdown(
         label="Kalite Videyo",
         width=200,
@@ -42,27 +56,23 @@ def main(page: ft.Page):
             ft.dropdown.Option("720p"),
             ft.dropdown.Option("1080p"),
         ],
-        value="720p"
+        value="720p",
+        disabled=True
     )
     
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", disabled=True)
     video_output = ft.Text("Videyo a ap parèt la a...", italic=True)
-
-    # 📥 BOUTON POU TELECHAJE (L ap kache okòmansman)
-    def telechaje_videyo(e):
-        if lyen_videyo_aktyèl.current:
-            # Lendi sa a ap louvri lyen videyo a nan yon lòt tab pou itilizatè a ka sove l dirèkteman
-            page.launch_url(lyen_videyo_aktyèl.current)
-        else:
-            video_output.value = "❌ Pa gen videyo ki ko jenere pou n telechaje!"
-            page.update()
-
-    btn_download = ft.ElevatedButton("📥 TELECHAJE VIDEYO A", on_click=telechaje_videyo, bgcolor="green", color="white", visible=False)
+    btn_download = ft.ElevatedButton("📥 TELECHAJE VIDEYO A", bgcolor="green", color="white", visible=False)
 
     def verifye_kle(e):
         if input_key.value == KLE_SEKRÈ:
             msg_status.value = "✅ Aksè Aksepte! Byenvini nan Motivmotion."
             msg_status.color = "green"
+            
+            # 🌟 NOU KACHE BWAT KLE A NÈT LA A POU L PA PRAN ESPAS
+            bwat_kle_sekirite.visible = False
+            
+            # NOU DEBLOKE PATI VIDEYO A
             prompt_input.disabled = False
             resolution_dropdown.disabled = False
             btn_generate.disabled = False
@@ -72,34 +82,28 @@ def main(page: ft.Page):
             msg_status.color = "red"
             page.update()
 
-    btn_verify = ft.ElevatedButton("VÈRIFYE KLE A", on_click=verifye_kle, bgcolor="blue", color="white")
-
-    # Paj la ap kòmanse ak bwat kle a sèlman ki aktif
-    prompt_input.disabled = True
-    resolution_dropdown.disabled = True
+    # Nou ajoute bouton telechaje a nan fonksyon an tou
+    def telechaje_videyo(e):
+        if lyen_videyo_aktyèl.current:
+            page.launch_url(lyen_videyo_aktyèl.current)
+        else:
+            video_output.value = "❌ Pa gen videyo ki ko jenere!"
+            page.update()
+            
+    btn_download.on_click = telechaje_videyo
 
     page.add(
         ft.Text("🌟 MOTIVMOTION ULTIMATE 🌟", size=28, weight=ft.FontWeight.BOLD, color="blue"),
         ft.Text("Sistèm Jenerasyon Videyo Sinematik ak AI (Google Veo)", size=16, color="grey"),
         ft.Divider(),
-        ft.Container(
-            content=ft.Column([
-                input_key,
-                btn_verify,
-                msg_status
-            ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=20,
-            border_radius=10,
-            bgcolor="grey",
-            width=450
-        ),
+        bwat_kle_sekirite,  # Bwat sa a ap disparèt nèt lè kle a bon
         ft.Container(height=20),
         ft.Column([
             prompt_input,
             resolution_dropdown,
             btn_generate,
             video_output,
-            btn_download  # Nou ajoute bouton vèt la la a
+            btn_download
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
     )
 
