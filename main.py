@@ -78,8 +78,8 @@ def main(page: ft.Page):
             bgcolor="grey",
             width=450
         ),
-        ft.VerticalDivider(height=20),
-        ft.Column([
+        ft.Container(height=20),
+         ft.Column([
             prompt_input,
             resolution_dropdown,
             btn_generate,
