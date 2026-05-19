@@ -47,25 +47,25 @@ def main(page: ft.Page):
     def verifye_kle(e):
         if input_key.value == KLE_SEKRÈ:
             msg_status.value = "✅ Aksè Aksepte! Byenvini nan Motivmotion."
-            msg_status.color = ft.colors.GREEN_400
+            msg_status.color = "green"
             prompt_input.disabled = False
             resolution_dropdown.disabled = False
             btn_generate.disabled = False
             page.update()
         else:
             msg_status.value = "❌ Kle a pa bon. Eseye ankò!"
-            msg_status.color = ft.colors.RED_400
+            msg_status.color = "red"
             page.update()
 
-     # Blòk sa a dwe aliye byen pwòp sou bò gòch la ak 4 espas devan chak liy:
     btn_verify = ft.ElevatedButton("VÈRIFYE KLE A", on_click=verifye_kle, bgcolor="blue", color="white")
 
-    # Paj la ap kòmanse ak bwat kle a sèlman ki aktif
+    # Paj la ap kòmanse ak bwat kle a swlman ki aktif
     prompt_input.disabled = True
     resolution_dropdown.disabled = True
+
     page.add(
-        ft.Text("🌟 MOTIVMOTION ULTIMATE 🌟", size=28, weight=ft.FontWeight.BOLD, color=ft.colors.bue_400),
-        ft.Text("Sistèm Jenerasyon Videyo Sinematik ak AI (Google Veo)", size=16, color=ft.colors.grey_400),
+        ft.Text("🌟 MOTIVMOTION ULTIMATE 🌟", size=28, weight=ft.FontWeight.BOLD, color="blue"),
+        ft.Text("Sistèm Jenerasyon Videyo Sinematik ak AI (Google Veo)", size=16, color="grey"),
         ft.Divider(),
         ft.Container(
             content=ft.Column([
@@ -75,7 +75,7 @@ def main(page: ft.Page):
             ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
             border_radius=10,
-            bgcolor=ft.colors.SURFACE_VARIANT,
+            bgcolor="grey",
             width=450
         ),
         ft.VerticalDivider(height=20),
