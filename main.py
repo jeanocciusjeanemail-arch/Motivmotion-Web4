@@ -26,6 +26,9 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.padding = 30
 
+    # Lyen videyo ki kreye a (n ap sove l la a pou bouton telechajman an ka jwenn li)
+    lyen_videyo_aktyèl = ft.Ref[str]()
+
     # Kontwòl pou kle aktivasyon an
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
@@ -41,8 +44,20 @@ def main(page: ft.Page):
         ],
         value="720p"
     )
+    
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", disabled=True)
     video_output = ft.Text("Videyo a ap parèt la a...", italic=True)
+
+    # 📥 BOUTON POU TELECHAJE (L ap kache okòmansman)
+    def telechaje_videyo(e):
+        if lyen_videyo_aktyèl.current:
+            # Lendi sa a ap louvri lyen videyo a nan yon lòt tab pou itilizatè a ka sove l dirèkteman
+            page.launch_url(lyen_videyo_aktyèl.current)
+        else:
+            video_output.value = "❌ Pa gen videyo ki ko jenere pou n telechaje!"
+            page.update()
+
+    btn_download = ft.ElevatedButton("📥 TELECHAJE VIDEYO A", on_click=telechaje_videyo, bgcolor="green", color="white", visible=False)
 
     def verifye_kle(e):
         if input_key.value == KLE_SEKRÈ:
@@ -59,7 +74,7 @@ def main(page: ft.Page):
 
     btn_verify = ft.ElevatedButton("VÈRIFYE KLE A", on_click=verifye_kle, bgcolor="blue", color="white")
 
-    # Paj la ap kòmanse ak bwat kle a swlman ki aktif
+    # Paj la ap kòmanse ak bwat kle a sèlman ki aktif
     prompt_input.disabled = True
     resolution_dropdown.disabled = True
 
@@ -79,15 +94,15 @@ def main(page: ft.Page):
             width=450
         ),
         ft.Container(height=20),
-         ft.Column([
+        ft.Column([
             prompt_input,
             resolution_dropdown,
             btn_generate,
-            video_output
+            video_output,
+            btn_download  # Nou ajoute bouton vèt la la a
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
     )
 
-# Render bezwen pò HTTP 8000 a pou l fonksyone
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
