@@ -1,4 +1,4 @@
-import flet as ft 
+import flet as ft
 import os
 import json
 import requests
@@ -26,11 +26,9 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.padding = 30
 
-    # Sove lyen medya ki jenere a
     lyen_medya_aktyèl = [None]
-    tip_medya = ["video"] # Ka "video" oswa "image"
+    tip_medya = ["video"] 
 
-    # Kontwòl pou kle aktivasyon an
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
     
@@ -46,7 +44,6 @@ def main(page: ft.Page):
         width=450
     )
     
-    # Chwa ant Videyo ak Imaj (Nou ranplase Tabs pa RadioGroup pou evite erè)
     def chanje_tip(e):
         tip_medya[0] = e.control.value
         btn_generate.text = "JENERÈ VIDEYO" if tip_medya[0] == "video" else "JENERÈ IMAJ / FOTO"
@@ -63,20 +60,24 @@ def main(page: ft.Page):
     )
 
     prompt_input = ft.TextField(label="Ki sa ou vle AI a kreye pou ou? (Ekri an Anglè)", multiline=True, min_lines=3, width=500, disabled=True)
-    
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", disabled=True, bgcolor="blue", color="white")
     progress_bar = ft.ProgressBar(width=500, visible=False)
-    
     container_rezilta = ft.Container(visible=False, content=ft.Text("Rezilta a ap parèt la a"))
     btn_download = ft.ElevatedButton("📥 TELECHAJE / EKSPÒTE", bgcolor="green", color="white", visible=False)
 
-    # FONKSYON API GOOGLE CLOUD
     def kòmanse_jenerasyon(e):
         if not prompt_input.value:
             prompt_input.error_text = "Tanpri ekri yon tèks anvan!"
             page.update()
             return
         
+        # 🌟 TCHEKE SI GOOGLE CREDENTIALS YO LA ANVAN N AL PLI LWEN
+        if credentials is None:
+            container_rezilta.content = ft.Text("❌ Erè: Kle Google Cloud la (JSON) pa configuré sou Render. Tcheke Environment Variables yo.", color="red")
+            container_rezilta.visible = True
+            page.update()
+            return
+
         btn_generate.disabled = True
         progress_bar.visible = True
         container_rezilta.visible = False
@@ -173,4 +174,3 @@ def main(page: ft.Page):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
-       
