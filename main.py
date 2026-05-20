@@ -1,4 +1,4 @@
-import flet as ft
+     import flet as ft
 import os
 import json
 import requests
@@ -46,19 +46,19 @@ def main(page: ft.Page):
         width=450
     )
     
-    # Chwa ant Videyo ak Imaj
+    # Chwa ant Videyo ak Imaj (Nou ranplase Tabs pa RadioGroup pou evite erè)
     def chanje_tip(e):
-        tip_medya[0] = "video" if e.control.selected_index == 0 else "image"
-        btn_generate.text = "JENERÈ VIDEYO" if tip_medya[0] == "video" else "JENERÈ IMAJ"
+        tip_medya[0] = e.control.value
+        btn_generate.text = "JENERÈ VIDEYO" if tip_medya[0] == "video" else "JENERÈ IMAJ / FOTO"
         page.update()
 
-    gwo_tabs = ft.Tabs(
-        selected_index=0,
+    opsyon_chwa = ft.RadioGroup(
+        content=ft.Row([
+            ft.Radio(value="video", label="🎬 Kreye Videyo AI"),
+            ft.Radio(value="image", label="🖼️ Kreye Imaj / Foto AI"),
+        ], alignment=ft.MainAxisAlignment.CENTER),
+        value="video",
         on_change=chanje_tip,
-        tabs=[
-            ft.Tab(text="🎬 Seksyon Videyo", icon="movie"),
-            ft.Tab(text="🖼️ Seksyon Foto / Imaj", icon="image"),
-        ],
         visible=False
     )
 
@@ -67,11 +67,10 @@ def main(page: ft.Page):
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", disabled=True, bgcolor="blue", color="white")
     progress_bar = ft.ProgressBar(width=500, visible=False)
     
-    # Zòn kote rezilta a ap afiche (Videyo oswa Imaj)
     container_rezilta = ft.Container(visible=False, content=ft.Text("Rezilta a ap parèt la a"))
     btn_download = ft.ElevatedButton("📥 TELECHAJE / EKSPÒTE", bgcolor="green", color="white", visible=False)
 
-    # FONKSYON POU RELE GOOGLE CLOUD AI (VEO / IMAGEN)
+    # FONKSYON API GOOGLE CLOUD
     def kòmanse_jenerasyon(e):
         if not prompt_input.value:
             prompt_input.error_text = "Tanpri ekri yon tèks anvan!"
@@ -85,7 +84,6 @@ def main(page: ft.Page):
         page.update()
 
         try:
-            # Token sekirite Google
             import google.auth.transport.requests
             auth_req = google.auth.transport.requests.Request()
             credentials.refresh(auth_req)
@@ -97,14 +95,12 @@ def main(page: ft.Page):
             }
 
             if tip_medya[0] == "video":
-                # API Google Veo pou Videyo
                 url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/veo-2.0-generate-video:predict"
                 payload = {
                     "instances": [{"prompt": prompt_input.value}],
                     "parameters": {"aspectRatio": "16:9", "durationSeconds": 5}
                 }
             else:
-                # API Google Imagen pou Foto
                 url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-002:predict"
                 payload = {
                     "instances": [{"prompt": prompt_input.value}],
@@ -116,13 +112,10 @@ def main(page: ft.Page):
 
             if response.status_code == 200:
                 if tip_medya[0] == "video":
-                    # Rale lyen videyo a
                     video_uri = res_data["predictions"][0]["generatedSamples"][0]["video"]["uri"]
-                    # Konvèti lyen an an lyen entènèt si posib
                     lyen_medya_aktyèl[0] = video_uri.replace("gs://", "https://storage.googleapis.com/")
                     container_rezilta.content = ft.Video(playlist=[ft.VideoMedia(lyen_medya_aktyèl[0])], width=500, height=300)
                 else:
-                    # Rale imaj la (Base64)
                     img_base64 = res_data["predictions"][0]["bytesBase64Encoded"]
                     lyen_medya_aktyèl[0] = f"data:image/jpeg;base64,{img_base64}"
                     container_rezilta.content = ft.Image(src_base64=img_base64, width=400, height=400)
@@ -146,7 +139,7 @@ def main(page: ft.Page):
     def verifye_kle(e):
         if input_key.value == KLE_SEKRÈ:
             bwat_kle_sekirite.visible = False
-            gwo_tabs.visible = True
+            opsyon_chwa.visible = True
             prompt_input.disabled = False
             btn_generate.disabled = False
             page.update()
@@ -166,7 +159,7 @@ def main(page: ft.Page):
         ft.Text("Sistèm Jenerasyon Videyo ak Imaj ak AI (Google Veo & Imagen)", size=16, color="grey"),
         ft.Divider(),
         bwat_kle_sekirite,
-        gwo_tabs,
+        opsyon_chwa,
         ft.Container(height=20),
         ft.Column([
             prompt_input,
@@ -180,3 +173,4 @@ def main(page: ft.Page):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
+       
