@@ -6,32 +6,68 @@ from google.oauth2 import service_account
 
 # 1. KONFIGIRASYON SIKIRITE GOOGLE CLOUD SOU RENDER
 credentials = None
-project_id = "motivmotion-421715" # ID pwojè Google Cloud ou a
+project_id = "motivmotion-421715"
 if "GOOGLE_APPLICATION_CREDENTIALS_JSON" in os.environ:
     try:
         creds_data = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS_JSON"])
         credentials = service_account.Credentials.from_service_account_info(creds_data)
         project_id = creds_data.get("project_id", project_id)
-        print("✅ Kle Google Cloud la chaje ak siksè depi nan Render!")
     except Exception as e:
-        print(f"❌ Erè lè n ap li JSON sekirite a: {e}")
+        print(f"❌ Erè Google Cloud JSON: {e}")
 
-# 2. KONFIGIRASYON KLE AKTIVASYON LOKAL
-KLE_SEKRÈ = "AVNI-AYITI-2026"
+# 2. BAZ DONE KREDI ITILIZATÈ YO (Fichye JSON)
+FICHYE_KREDI = "users_credits.json"
+
+if not os.path.exists(FICHYE_KREDI):
+    tès_itilizatè = {
+        "AVNI-AYITI-2026": {"non": "Pwofesè Jean", "kredi": 50},
+        "MOTIV-GUEST-10": {"non": "Envite", "kredi": 10},
+        "TEST-USER-0": {"non": "Itilizatè Tès", "kredi": 0}
+    }
+    with open(FICHYE_KREDI, "w") as f:
+        json.dump(tès_itilizatè, f, indent=4)
+
+def li_kredi_itilizatè():
+    try:
+        with open(FICHYE_KREDI, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def sove_kredi_itilizatè(data):
+    with open(FICHYE_KREDI, "w") as f:
+        json.dump(data, f, indent=4)
+
 
 def main(page: ft.Page):
-    page.title = "Motivmotion Ultimate"
+    page.title = "Motivmotion Ultimate - Peman"
     page.theme_mode = ft.ThemeMode.DARK
     page.scroll = ft.ScrollMode.AUTO
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.padding = 30
 
     lyen_medya_aktyèl = [None]
-    tip_medya = ["video"] 
+    tip_medya = ["video"]
+    kle_itilizatè_aktyèl = [None]
 
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
     
+    # Eleman pou Afiche Kredi ak Peman
+    txt_byenvini = ft.Text("", size=18, weight=ft.FontWeight.BOLD, color="blue")
+    txt_kredi = ft.Text("", size=16, weight=ft.FontWeight.BOLD, color="green")
+    
+    # 💳 Fenèt Peman ki pral louvri lè yon moun vle achte Kredi
+    def louvri_paj_peman(e):
+        # La a nou ka mete lyen Stripe ou oswa lyen Pix Gateway ou dirèkteman
+        # Pou kounye a n ap louvri yon bwat dyalòg pou l chwazi
+        page.dialog = bwat_opsyon_peman
+        bwat_opsyon_peman.open = True
+        page.update()
+
+    btn_buy_credits = ft.ElevatedButton("💳 ACHTE KREDI (Kat Kredi / Pix / MonCash)", on_click=louvri_paj_peman, bgcolor="orange", color="white")
+    bwat_enfo_kredi = ft.Column([txt_byenvini, txt_kredi, btn_buy_credits], horizontal_alignment=ft.CrossAxisAlignment.CENTER, visible=False)
+
     bwat_kle_sekirite = ft.Container(
         content=ft.Column([
             input_key,
@@ -46,7 +82,7 @@ def main(page: ft.Page):
     
     def chanje_tip(e):
         tip_medya[0] = e.control.value
-        btn_generate.text = "JENERÈ VIDEYO" if tip_medya[0] == "video" else "JENERÈ IMAJ / FOTO"
+        btn_generate.text = "JENERÈ VIDEYO (5 Kredi)" if tip_medya[0] == "video" else "JENERÈ IMAJ / FOTO (1 Kredi)"
         page.update()
 
     opsyon_chwa = ft.RadioGroup(
@@ -60,20 +96,66 @@ def main(page: ft.Page):
     )
 
     prompt_input = ft.TextField(label="Ki sa ou vle AI a kreye pou ou? (Ekri an Anglè)", multiline=True, min_lines=3, width=500, disabled=True)
-    btn_generate = ft.ElevatedButton("JENERÈ VIDEYO", disabled=True, bgcolor="blue", color="white")
+    btn_generate = ft.ElevatedButton("JENERÈ VIDEYO (5 Kredi)", disabled=True, bgcolor="blue", color="white")
     progress_bar = ft.ProgressBar(width=500, visible=False)
     container_rezilta = ft.Container(visible=False, content=ft.Text("Rezilta a ap parèt la a"))
     btn_download = ft.ElevatedButton("📥 TELECHAJE / EKSPÒTE", bgcolor="green", color="white", visible=False)
 
+    # 🛍️ MODAL POPUP POU CHWAZI SÈVIS PEMAN AN
+    def peye_kat_kredi(e):
+        # Isit la w ap mete lyen checkout Stripe ou a
+        page.launch_url("https://dashboard.stripe.com/") 
+        bwat_opsyon_peman.open = False
+        page.update()
+
+    def peye_pix(e):
+        # Isit la nou ka jenere yon paj oswa montre kle Pix ou
+        page.dialog = bwat_pix_detay
+        bwat_pix_detay.open = True
+        page.update()
+
+    bwat_opsyon_peman = ft.AlertDialog(
+        title=ft.Text("Chwazi Mwayen Peman Ou"),
+        content=ft.Column([
+            ft.Text("Kredi yo ap monte otomatikman sou kont ou apre peman an."),
+            ft.ElevatedButton("💳 Peye ak Kat Kredi (Stripe)", on_click=peye_kat_kredi, width=300, bgcolor="blue", color="white"),
+            ft.ElevatedButton("📱 Peye ak PIX (Brezil)", on_click=peye_pix, width=300, bgcolor="teal", color="white"),
+            ft.Text("🇭🇹 Pou Ayiti: Kontakte Admin nan MonCash (+509 xx xx xx)", size=12, color="grey")
+        ], height=200, tight=True),
+    )
+
+    bwat_pix_detay = ft.AlertDialog(
+        title=ft.Text("Peman pa PIX"),
+        content=ft.Column([
+            ft.Text("Kole kle PIX sa a nan aplikasyon bank ou a pou w fè transfè a:"),
+            ft.TextField(value="jeanoccius@email.com", read_only=True, label="Kle PIX (Email/CNPJ)"),
+            ft.Text("⚠️ Apre w fin voye lajan an, voye prèv la bay sipò a pou kredi w ka monte.", size=12, color="yellow")
+        ], height=150, tight=True),
+    )
+
+    # FONKSYON JENERASYON MEDYA
     def kòmanse_jenerasyon(e):
         if not prompt_input.value:
             prompt_input.error_text = "Tanpri ekri yon tèks anvan!"
             page.update()
             return
         
-        # 🌟 TCHEKE SI GOOGLE CREDENTIALS YO LA ANVAN N AL PLI LWEN
+        db_kredi = li_kredi_itilizatè()
+        kle = kle_itilizatè_aktyèl[0]
+        kredi_aktywl = db_kredi[kle]["kredi"]
+        koute = 5 if tip_medya[0] == "video" else 1
+
+        if kredi_aktyèl < koute:
+            container_rezilta.content = ft.Column([
+                ft.Text("❌ Kredi ou pa ase pou aksyon sa a!", color="red", weight=ft.FontWeight.BOLD),
+                ft.ElevatedButton("💳 ACHTE KREDI KOUNYE A", on_click=louvri_paj_peman, bgcolor="orange", color="white")
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+            container_rezilta.visible = True
+            page.update()
+            return
+
         if credentials is None:
-            container_rezilta.content = ft.Text("❌ Erè: Kle Google Cloud la (JSON) pa configuré sou Render. Tcheke Environment Variables yo.", color="red")
+            container_rezilta.content = ft.Text("❌ Erè: Kle Google Cloud la (JSON) pa configuré.", color="red")
             container_rezilta.visible = True
             page.update()
             return
@@ -112,6 +194,10 @@ def main(page: ft.Page):
             res_data = response.json()
 
             if response.status_code == 200:
+                db_kredi[kle]["kredi"] -= koute
+                sove_kredi_itilizatè(db_kredi)
+                txt_kredi.value = f"Kredi ki rete: {db_kredi[kle]['kredi']} Kredi"
+
                 if tip_medya[0] == "video":
                     video_uri = res_data["predictions"][0]["generatedSamples"][0]["video"]["uri"]
                     lyen_medya_aktyèl[0] = video_uri.replace("gs://", "https://storage.googleapis.com/")
@@ -138,14 +224,23 @@ def main(page: ft.Page):
     btn_generate.on_click = kòmanse_jenerasyon
 
     def verifye_kle(e):
-        if input_key.value == KLE_SEKRÈ:
+        kle_antre = input_key.value
+        db_kredi = li_kredi_itilizatè()
+
+        if kle_antre in db_kredi:
+            kle_itilizatè_aktyèl[0] = kle_antre
             bwat_kle_sekirite.visible = False
+            
+            txt_byenvini.value = f"Byenvini, {db_kredi[kle_antre]['non']}!"
+            txt_kredi.value = f"Kredi ki rete: {db_kredi[kle_antre]['kredi']} Kredi"
+            bwat_enfo_kredi.visible = True
+            
             opsyon_chwa.visible = True
             prompt_input.disabled = False
             btn_generate.disabled = False
             page.update()
         else:
-            msg_status.value = "❌ Kle a pa bon. Eseye ankò!"
+            msg_status.value = "❌ Kle sa a pa egziste nan sistèm nan!"
             msg_status.color = "red"
             page.update()
 
@@ -157,9 +252,10 @@ def main(page: ft.Page):
 
     page.add(
         ft.Text("🌟 MOTIVMOTION ULTIMATE 🌟", size=28, weight=ft.FontWeight.BOLD, color="blue"),
-        ft.Text("Sistèm Jenerasyon Videyo ak Imaj ak AI (Google Veo & Imagen)", size=16, color="grey"),
+        ft.Text("Jenerasyon Medya ak Sistèm Peman Kat Kredi & PIX", size=16, color="grey"),
         ft.Divider(),
         bwat_kle_sekirite,
+        bwat_enfo_kredi,
         opsyon_chwa,
         ft.Container(height=20),
         ft.Column([
