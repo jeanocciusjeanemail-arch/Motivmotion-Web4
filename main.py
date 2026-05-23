@@ -53,14 +53,10 @@ def main(page: ft.Page):
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
     
-    # Eleman pou Afiche Kredi ak Peman
     txt_byenvini = ft.Text("", size=18, weight=ft.FontWeight.BOLD, color="blue")
     txt_kredi = ft.Text("", size=16, weight=ft.FontWeight.BOLD, color="green")
     
-    # 💳 Fenèt Peman ki pral louvri lè yon moun vle achte Kredi
     def louvri_paj_peman(e):
-        # La a nou ka mete lyen Stripe ou oswa lyen Pix Gateway ou dirèkteman
-        # Pou kounye a n ap louvri yon bwat dyalòg pou l chwazi
         page.dialog = bwat_opsyon_peman
         bwat_opsyon_peman.open = True
         page.update()
@@ -101,15 +97,12 @@ def main(page: ft.Page):
     container_rezilta = ft.Container(visible=False, content=ft.Text("Rezilta a ap parèt la a"))
     btn_download = ft.ElevatedButton("📥 TELECHAJE / EKSPÒTE", bgcolor="green", color="white", visible=False)
 
-    # 🛍️ MODAL POPUP POU CHWAZI SÈVIS PEMAN AN
     def peye_kat_kredi(e):
-        # Isit la w ap mete lyen checkout Stripe ou a
         page.launch_url("https://dashboard.stripe.com/") 
         bwat_opsyon_peman.open = False
         page.update()
 
     def peye_pix(e):
-        # Isit la nou ka jenere yon paj oswa montre kle Pix ou
         page.dialog = bwat_pix_detay
         bwat_pix_detay.open = True
         page.update()
@@ -140,9 +133,9 @@ def main(page: ft.Page):
             page.update()
             return
         
-        kredi_aktyèl = db_kredi[kle]["kredi"]
+        db_kredi = li_kredi_itilizatè()
         kle = kle_itilizatè_aktyèl[0]
-        kredi_aktywl = db_kredi[kle]["kredi"]
+        kredi_aktyèl = db_kredi[kle]["kredi"]
         koute = 5 if tip_medya[0] == "video" else 1
 
         if kredi_aktyèl < koute:
@@ -194,9 +187,11 @@ def main(page: ft.Page):
             res_data = response.json()
 
             if response.status_code == 200:
-                db_kredi[kle]["kredi"] -= koute
-                sove_kredi_itilizatè(db_kredi)
-                txt_kredi.value = f"Kredi ki rete: {db_kredi[kle]['kredi']} Kredi"
+                # NOU RE-LI BAZ DONE A POU EVITE ERÈ ANVAN N SOVE
+                db_kredi_saved = li_kredi_itilizatè()
+                db_kredi_saved[kle]["kredi"] -= koute
+                sove_kredi_itilizatè(db_kredi_saved)
+                txt_kredi.value = f"Kredi ki rete: {db_kredi_saved[kle]['kredi']} Kredi"
 
                 if tip_medya[0] == "video":
                     video_uri = res_data["predictions"][0]["generatedSamples"][0]["video"]["uri"]
@@ -225,14 +220,14 @@ def main(page: ft.Page):
 
     def verifye_kle(e):
         kle_antre = input_key.value
-        db_kredi = li_kredi_itilizatè()
+        db_kredi_verify = li_kredi_itilizatè()
 
-        if kle_antre in db_kredi:
+        if kle_antre in db_kredi_verify:
             kle_itilizatè_aktyèl[0] = kle_antre
             bwat_kle_sekirite.visible = False
             
-            txt_byenvini.value = f"Byenvini, {db_kredi[kle_antre]['non']}!"
-            txt_kredi.value = f"Kredi ki rete: {db_kredi[kle_antre]['kredi']} Kredi"
+            txt_byenvini.value = f"Byenvini, {db_kredi_verify[kle_antre]['non']}!"
+            txt_kredi.value = f"Kredi ki rete: {db_kredi_verify[kle_antre]['kredi']} Kredi"
             bwat_enfo_kredi.visible = True
             
             opsyon_chwa.visible = True
