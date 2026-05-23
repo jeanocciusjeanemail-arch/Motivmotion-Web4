@@ -140,7 +140,7 @@ def main(page: ft.Page):
             page.update()
             return
         
-        db_kredi = li_kredi_itilizatè()
+        kredi_aktyèl = db_kredi[kle]["kredi"]
         kle = kle_itilizatè_aktyèl[0]
         kredi_aktywl = db_kredi[kle]["kredi"]
         koute = 5 if tip_medya[0] == "video" else 1
