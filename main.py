@@ -2,6 +2,7 @@ import flet as ft
 import os
 import json
 import requests
+import base64
 from google.oauth2 import service_account
 
 # 1. KONFIGIRASYON SIKIRITE GOOGLE CLOUD SOU RENDER
@@ -49,6 +50,7 @@ def main(page: ft.Page):
     lyen_medya_aktyèl = [None]
     tip_medya = ["video"]
     kle_itilizatè_aktyèl = [None]
+    foto_enpòte_base64 = [None]  # Pou n sove foto itilizatè a enpòte a
 
     input_key = ft.TextField(label="Antre Kle Aktivasyon Ou", password=True, can_reveal_password=True, width=400)
     msg_status = ft.Text("", weight=ft.FontWeight.BOLD)
@@ -78,7 +80,13 @@ def main(page: ft.Page):
     
     def chanje_tip(e):
         tip_medya[0] = e.control.value
-        btn_generate.text = "JENERÈ VIDEYO (5 Kredi)" if tip_medya[0] == "video" else "JENERÈ IMAJ / FOTO (1 Kredi)"
+        if tip_medya[0] == "video":
+            btn_generate.text = "JENERÈ VIDEYO (5 Kredi)"
+            btn_upload.visible = False
+            bwat_preview_foto.visible = False
+        else:
+            btn_generate.text = "JENERÈ IMAJ / FOTO (1 Kredi)"
+            btn_upload.visible = True  # Nou montre bouton enpòte a nan seksyon Imaj
         page.update()
 
     opsyon_chwa = ft.RadioGroup(
@@ -90,6 +98,35 @@ def main(page: ft.Page):
         on_change=chanje_tip,
         visible=False
     )
+
+    # 📸 KOUNYÈ A NOU KONFIGIRE EKSTRÈ AK BOUTON POU ENPÒTE FOTO A
+    def rezilta_chwazi_foto(e: ft.FilePickerResultEvent):
+        if e.files:
+            foto_chwazi = e.files[0]
+            # Li foto a epi konvèti l an Base64 pou n ka afiche l sou ekran an
+            with open(foto_chwazi.path, "rb") as f_img:
+                b64_string = base64.b64encode(f_img.read()).decode('utf-8')
+                foto_enpòte_base64[0] = b64_string
+                preview_image.src_base64 = b64_string
+                bwat_preview_foto.visible = True
+                txt_preview.value = f"✅ Foto chwazi: {foto_chwazi.name}"
+            page.update()
+
+    file_picker = ft.FilePicker(on_result=rezilta_chwazi_foto)
+    page.overlay.append(file_picker)
+
+    btn_upload = ft.ElevatedButton(
+        "📸 ENPÒTE FOTO OU",
+        icon="upload",
+        bgcolor="purple",
+        color="white",
+        visible=False,
+        on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)
+    )
+
+    preview_image = ft.Image(width=150, height=150, border_radius=10)
+    txt_preview = ft.Text("Foto ou enpòte a", size=12, italic=True)
+    bwat_preview_foto = ft.Column([txt_preview, preview_image], horizontal_alignment=ft.CrossAxisAlignment.CENTER, visible=False)
 
     prompt_input = ft.TextField(label="Ki sa ou vle AI a kreye pou ou? (Ekri an Anglè)", multiline=True, min_lines=3, width=500, disabled=True)
     btn_generate = ft.ElevatedButton("JENERÈ VIDEYO (5 Kredi)", disabled=True, bgcolor="blue", color="white")
@@ -178,8 +215,13 @@ def main(page: ft.Page):
                 }
             else:
                 url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-002:predict"
+                # Si itilizatè a te enpòte pwòp foto l, nou ka voye l bay AI a tou (Image-to-Image)
+                instance_payload = {"prompt": prompt_input.value}
+                if foto_enpòte_base64[0]:
+                    instance_payload["image"] = {"bytesBase64Encoded": foto_enpòte_base64[0]}
+                
                 payload = {
-                    "instances": [{"prompt": prompt_input.value}],
+                    "instances": [instance_payload],
                     "parameters": {"sampleCount": 1, "aspectRatio": "1:1", "outputMimeType": "image/jpeg"}
                 }
 
@@ -187,7 +229,6 @@ def main(page: ft.Page):
             res_data = response.json()
 
             if response.status_code == 200:
-                # NOU RE-LI BAZ DONE A POU EVITE ERÈ ANVAN N SOVE
                 db_kredi_saved = li_kredi_itilizatè()
                 db_kredi_saved[kle]["kredi"] -= koute
                 sove_kredi_itilizatè(db_kredi_saved)
@@ -254,6 +295,9 @@ def main(page: ft.Page):
         opsyon_chwa,
         ft.Container(height=20),
         ft.Column([
+            btn_upload,            # Bouton pou enpòte foto a
+            bwat_preview_foto,     # Ti preview foto a
+            ft.Container(height=10),
             prompt_input,
             progress_bar,
             btn_generate,
