@@ -130,7 +130,7 @@ def main(page: ft.Page):
         on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)
     )
 
-     preview_image = ft.Image(src="", width=150, height=150, border_radius=10)
+    preview_image = ft.Image(src="", width=150, height=150, border_radius=10)
     txt_preview = ft.Text("Foto ou enpòte a", size=12, italic=True)
     bwat_preview_foto = ft.Column([txt_preview, preview_image], horizontal_alignment=ft.CrossAxisAlignment.CENTER, visible=False)
 
@@ -239,10 +239,10 @@ def main(page: ft.Page):
             res_data = response.json()
 
             if response.status_code == 200:
-                db_kredi_saved = li_kredi_itilizatè()
-                db_kredi_saved[kle]["kredi"] -= koute
-                sove_kredi_itilizatè(db_kredi_saved)
-                txt_kredi.value = f"Kredi ki rete: {db_kredi_saved[kle]['kredi']} Kredi"
+                # 🟢 KREDI A RETIRE NAN SUPABASE NAN NWAJ LA NET
+                nouvo_valè_kredi = kredi_aktyèl - koute
+                mete_jou_kredi_supabase(kle, nouvo_valè_kredi)
+                txt_kredi.value = f"Kredi ki rete: {nouvo_valè_kredi} Kredi"
 
                 if tip_medya[0] == "video":
                     video_uri = res_data["predictions"][0]["generatedSamples"][0]["video"]["uri"]
@@ -271,14 +271,14 @@ def main(page: ft.Page):
 
     def verifye_kle(e):
         kle_antre = input_key.value
-        db_kredi_verify = li_kredi_itilizatè()
+        itilizatè_info = li_kredi_supabase(kle_antre)
 
-        if kle_antre in db_kredi_verify:
+        if itilizatè_info:
             kle_itilizatè_aktyèl[0] = kle_antre
             bwat_kle_sekirite.visible = False
             
-            txt_byenvini.value = f"Byenvini, {db_kredi_verify[kle_antre]['non']}!"
-            txt_kredi.value = f"Kredi ki rete: {db_kredi_verify[kle_antre]['kredi']} Kredi"
+            txt_byenvini.value = f"Byenvini, {itilizatè_info['non']}!"
+            txt_kredi.value = f"Kredi ki rete: {itilizatè_info['kredi']} Kredi"
             bwat_enfo_kredi.visible = True
             
             opsyon_chwa.visible = True
