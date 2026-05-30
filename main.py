@@ -313,8 +313,9 @@ def main(page: ft.Page):
             btn_generate,
             container_rezilta,
             btn_download
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER ) )
+        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+    )
+
  if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
-
