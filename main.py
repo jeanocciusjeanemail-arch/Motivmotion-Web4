@@ -115,9 +115,11 @@ def main(page: ft.Page):
                 bwat_preview_foto.visible = True
                 txt_preview.value = f"✅ Foto chwazi: {foto_chwazi.name}"
             page.update()
-
-    file_picker = ft.FilePicker(on_change=rezilta_chwazi_foto)
-    page.overlay.append(file_picker)
+            
+ file_picker = ft.FilePicker()
+file_picker.on_result = rezilta_chwazi_foto
+file_picker.on_change = rezilta_chwazi_foto
+page.overlay.append(file_picker)
 
     btn_upload = ft.ElevatedButton(
         "📸 ENPÒTE FOTO OU",
