@@ -239,7 +239,6 @@ def main(page: ft.Page):
             res_data = response.json()
 
             if response.status_code == 200:
-                # 🟢 KREDI A RETIRE NAN SUPABASE NAN NWAJ LA NET
                 nouvo_valè_kredi = kredi_aktyèl - koute
                 mete_jou_kredi_supabase(kle, nouvo_valè_kredi)
                 txt_kredi.value = f"Kredi ki rete: {nouvo_valè_kredi} Kredi"
@@ -316,6 +315,6 @@ def main(page: ft.Page):
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
     )
 
- if __name__ == "__main__":
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
