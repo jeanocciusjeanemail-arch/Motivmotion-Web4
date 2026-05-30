@@ -115,13 +115,13 @@ def main(page: ft.Page):
                 bwat_preview_foto.visible = True
                 txt_preview.value = f"✅ Foto chwazi: {foto_chwazi.name}"
             page.update()
-            
-file_picker = ft.FilePicker()
-file_picker.on_result = rezilta_chwazi_foto
-file_picker.on_change = rezilta_chwazi_foto
-page.overlay.append(file_picker)
 
-btn_upload = ft.ElevatedButton(
+    file_picker = ft.FilePicker()
+    file_picker.on_result = rezilta_chwazi_foto
+    file_picker.on_change = rezilta_chwazi_foto
+    page.overlay.append(file_picker)
+
+    btn_upload = ft.ElevatedButton(
         "📸 ENPÒTE FOTO OU",
         icon="upload",
         bgcolor="purple",
@@ -175,7 +175,6 @@ btn_upload = ft.ElevatedButton(
             page.update()
             return
         
-        # 🟢 RE-GADE KREDI YO SOU SUPABASE DIRÈKTÈMAN
         kle = kle_itilizatè_aktyèl[0]
         itilizatè_info = li_kredi_supabase(kle)
         
@@ -240,10 +239,10 @@ btn_upload = ft.ElevatedButton(
             res_data = response.json()
 
             if response.status_code == 200:
-                # 🟢 RETIRE KREDI A NAN SUPABASE
-                nouvo_valè_kredi = kredi_aktyèl - koute
-                mete_jou_kredi_supabase(kle, nouvo_valè_kredi)
-                txt_kredi.value = f"Kredi ki rete: {nouvo_valè_kredi} Kredi"
+                db_kredi_saved = li_kredi_itilizatè()
+                db_kredi_saved[kle]["kredi"] -= koute
+                sove_kredi_itilizatè(db_kredi_saved)
+                txt_kredi.value = f"Kredi ki rete: {db_kredi_saved[kle]['kredi']} Kredi"
 
                 if tip_medya[0] == "video":
                     video_uri = res_data["predictions"][0]["generatedSamples"][0]["video"]["uri"]
@@ -272,15 +271,14 @@ btn_upload = ft.ElevatedButton(
 
     def verifye_kle(e):
         kle_antre = input_key.value
-        # 🟢 VÈRIFYE KLE A SOU SUPABASE
-        itilizatè_info = li_kredi_supabase(kle_antre)
+        db_kredi_verify = li_kredi_itilizatè()
 
-        if itilizatè_info:
+        if kle_antre in db_kredi_verify:
             kle_itilizatè_aktyèl[0] = kle_antre
             bwat_kle_sekirite.visible = False
             
-            txt_byenvini.value = f"Byenvini, {itilizatè_info['non']}!"
-            txt_kredi.value = f"Kredi ki rete: {itilizatè_info['kredi']} Kredi"
+            txt_byenvini.value = f"Byenvini, {db_kredi_verify[kle_antre]['non']}!"
+            txt_kredi.value = f"Kredi ki rete: {db_kredi_verify[kle_antre]['kredi']} Kredi"
             bwat_enfo_kredi.visible = True
             
             opsyon_chwa.visible = True
