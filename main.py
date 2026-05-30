@@ -121,7 +121,7 @@ file_picker.on_result = rezilta_chwazi_foto
 file_picker.on_change = rezilta_chwazi_foto
 page.overlay.append(file_picker)
 
-    btn_upload = ft.ElevatedButton(
+btn_upload = ft.ElevatedButton(
         "📸 ENPÒTE FOTO OU",
         icon="upload",
         bgcolor="purple",
