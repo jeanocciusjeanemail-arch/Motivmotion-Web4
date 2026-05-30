@@ -130,7 +130,7 @@ def main(page: ft.Page):
         on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)
     )
 
-    preview_image = ft.Image(width=150, height=150, border_radius=10)
+     preview_image = ft.Image(src="", width=150, height=150, border_radius=10)
     txt_preview = ft.Text("Foto ou enpòte a", size=12, italic=True)
     bwat_preview_foto = ft.Column([txt_preview, preview_image], horizontal_alignment=ft.CrossAxisAlignment.CENTER, visible=False)
 
